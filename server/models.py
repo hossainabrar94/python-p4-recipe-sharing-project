@@ -10,6 +10,8 @@ from config import db, bcrypt
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
+    serialize_rules = ('-recipes.user', '-ratings.user', '-favorites.user', '-_password_hash')
+
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String, nullable = False, unique = True)
     email = db.Column(db.String, nullable = False, unique = True)
@@ -43,6 +45,8 @@ class User(db.Model, SerializerMixin):
 class Recipe(db.Model, SerializerMixin):
     __tablename__ = 'recipes'
 
+    serialize_rules = ('-user.recipe','-favorites.recipe', '-ratings.recipe')
+
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String, nullable = False)
     instructions = db.Column(db.String, db.CheckConstraint('LENGTH(instructions) > 49'), nullable = False)
@@ -65,11 +69,19 @@ class Recipe(db.Model, SerializerMixin):
             return rating_sum/len(self.ratings)
         else:
             return None
+    
+    # ensuring lengthy instructions
+    @validates('instructions')
+    def validate_instructions(self, key, instructions):
+        if len(instructions) < 50:
+            raise ValueError('Please add some more details to the recipe instruction')
 
 
 # Many-to-Many Relationship - User can Favorite many Recipes and Recipes can be Favorited by many Users
 class Favorite(db.Model, SerializerMixin):
     __tablename__ = 'favorites'
+
+    serialize_rules = ('-user.favorites, -recipe.favorites')
 
     id = db.Column(db.Integer, primary_key = True)
     note = db.Column(db.String) # allows users to add a note-to-self when the favorite a recipe ie. 'add less sugar next time'
@@ -82,12 +94,18 @@ class Favorite(db.Model, SerializerMixin):
     user = db.relationship('User', back_populates = 'favorites')
     recipe = db.relationship('Recipe', back_populates = 'favorites')
 
+    # Need to use table_args unique constraint method due to needing multiple columns to be unique simultaneously. Ties the user and recipe to be unique combination
+    __table_args__ = (db.UniqueConstraint('user_id', 'recipe_id', name = 'unique_favorited_recipe'))
+
 
 
 class Rating(db.Model, SerializerMixin):
     __tablename__ = 'ratings'
+
+    serialize_rules = ('-user.ratings', '-recipe.ratings')
+
     id = db.Column(db.Integer, primary_key = True)
-    rating = db.Column(db.Integer, db.CheckConstraint('1 < LENGTH(rating) < 6'))
+    rating = db.Column(db.Integer, db.CheckConstraint('1 <= rating <= 5'))
 
     # Foreign Key created on the many side to point to 1 recipe
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'))
@@ -96,3 +114,6 @@ class Rating(db.Model, SerializerMixin):
     # Relationship variables
     user = db.relationship('User', back_populates = 'ratings')
     recipe = db.relationship('Recipe', back_populates = 'ratings')
+
+    # Need to use table_args unique constraint method due to needing multiple columns to be unique simultaneously. Ties the user and recipe to be unique combination
+    __table_args__ = (db.UniqueConstraint('user_id', 'recipe_id', name = 'unique_rating'))
