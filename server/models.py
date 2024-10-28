@@ -4,7 +4,6 @@ from sqlalchemy.orm import validates
 
 from config import db, bcrypt
 
-# Models go here!
 
 # One-to-Many Relationship - User has many Recipes
 class User(db.Model, SerializerMixin):
@@ -15,12 +14,12 @@ class User(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String, nullable = False, unique = True)
     email = db.Column(db.String, nullable = False, unique = True)
-    _password_hash = db.Column(db.String)
+    _password_hash = db.Column(db.String, nullable = False)
     
     # Creating one-to-many relationship - a user can have many recipes
     recipes = db.relationship('Recipe', back_populates = 'user', cascade = 'all')
     # Creating one-to-many relationship - a user can execute many ratings
-    ratings = db.relationship('Rating', back_populates = 'user', cascase = 'all' )
+    ratings = db.relationship('Rating', back_populates = 'user', cascade = 'all' )
     # creating many-to-many relationship - a user can have many favorite recipes
     favorites = db.relationship('Favorite', back_populates = 'user', cascade = 'all')
 
@@ -29,10 +28,13 @@ class User(db.Model, SerializerMixin):
         raise AttributeError('Not a readable attribute')
     @password.setter
     def password(self, password):
+        if len(password) < 4:
+            raise ValueError('Please enter a password with at least 4 characters') 
         self._password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def authenticate(self, password):
         return bcrypt.check_password_hash(self._password_hash, password)
+    
     
     @validates('email')
     def validate_email(self, key, address):
@@ -45,7 +47,7 @@ class User(db.Model, SerializerMixin):
 class Recipe(db.Model, SerializerMixin):
     __tablename__ = 'recipes'
 
-    serialize_rules = ('-user.recipe','-favorites.recipe', '-ratings.recipe')
+    serialize_rules = ('-user.recipes','-favorites.recipe', '-ratings.recipe')
 
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String, nullable = False)
@@ -62,7 +64,7 @@ class Recipe(db.Model, SerializerMixin):
     # creating many-to-many relationship - a recipe can be favorited many times
     favorites = db.relationship('Favorite', back_populates = 'recipe', cascade = 'all')
 
-    # Need to calculate avg rating for each cuisine
+    # Need to calculate avg rating for this recipe
     def avg_rating(self):
         if self.ratings:
             rating_sum = sum(rate.rating for rate in self.ratings)
@@ -81,7 +83,7 @@ class Recipe(db.Model, SerializerMixin):
 class Favorite(db.Model, SerializerMixin):
     __tablename__ = 'favorites'
 
-    serialize_rules = ('-user.favorites, -recipe.favorites')
+    serialize_rules = ('-user.favorites', '-recipe.favorites')
 
     id = db.Column(db.Integer, primary_key = True)
     note = db.Column(db.String) # allows users to add a note-to-self when the favorite a recipe ie. 'add less sugar next time'
@@ -95,7 +97,7 @@ class Favorite(db.Model, SerializerMixin):
     recipe = db.relationship('Recipe', back_populates = 'favorites')
 
     # Need to use table_args unique constraint method due to needing multiple columns to be unique simultaneously. Ties the user and recipe to be unique combination
-    __table_args__ = (db.UniqueConstraint('user_id', 'recipe_id', name = 'unique_favorited_recipe'))
+    __table_args__ = (db.UniqueConstraint('user_id', 'recipe_id', name = 'unique_favorited_recipe'), )
 
 
 
@@ -116,4 +118,4 @@ class Rating(db.Model, SerializerMixin):
     recipe = db.relationship('Recipe', back_populates = 'ratings')
 
     # Need to use table_args unique constraint method due to needing multiple columns to be unique simultaneously. Ties the user and recipe to be unique combination
-    __table_args__ = (db.UniqueConstraint('user_id', 'recipe_id', name = 'unique_rating'))
+    __table_args__ = (db.UniqueConstraint('user_id', 'recipe_id', name = 'unique_rating'),)
