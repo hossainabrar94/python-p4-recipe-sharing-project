@@ -17,11 +17,12 @@ class User(db.Model, SerializerMixin):
     _password_hash = db.Column(db.String, nullable = False)
     
     # Creating one-to-many relationship - a user can have many recipes
-    recipes = db.relationship('Recipe', back_populates = 'user', cascade = 'all')
-    # Creating one-to-many relationship - a user can execute many ratings
-    ratings = db.relationship('Rating', back_populates = 'user', cascade = 'all' )
+    recipes = db.relationship('Recipe', back_populates = 'user', cascade = 'all, delete-orphan')
     # creating many-to-many relationship - a user can have many favorite recipes
-    favorites = db.relationship('Favorite', back_populates = 'user', cascade = 'all')
+    favorites = db.relationship('Favorite', back_populates = 'user', cascade = 'all, delete-orphan')
+
+    # Association Proxy connecting many-to-many between users and recipes table
+    favorited_recipe = db.relationship('favorites', 'recipes')
 
     @property
     def password(self):
@@ -34,7 +35,6 @@ class User(db.Model, SerializerMixin):
 
     def authenticate(self, password):
         return bcrypt.check_password_hash(self._password_hash, password)
-    
     
     @validates('email')
     def validate_email(self, key, address):
@@ -60,23 +60,18 @@ class Recipe(db.Model, SerializerMixin):
 
     # Relationship variables
     user = db.relationship('User', back_populates='recipes')
-    ratings = db.relationship('Rating', back_populates = 'recipe', cascade = 'all')
     # creating many-to-many relationship - a recipe can be favorited many times
-    favorites = db.relationship('Favorite', back_populates = 'recipe', cascade = 'all')
+    favorites = db.relationship('Favorite', back_populates = 'recipe', cascade = 'all, delete-orphan')
 
-    # Need to calculate avg rating for this recipe
-    def avg_rating(self):
-        if self.ratings:
-            rating_sum = sum(rate.rating for rate in self.ratings)
-            return rating_sum/len(self.ratings)
-        else:
-            return None
+    # Association Proxy connecting many-to-many between users and recipes table
+    users_who_favorited = db.relationship('favorites', 'users')
     
     # ensuring lengthy instructions
     @validates('instructions')
     def validate_instructions(self, key, instructions):
         if len(instructions) < 50:
             raise ValueError('Please add some more details to the recipe instruction')
+
 
 
 # Many-to-Many Relationship - User can Favorite many Recipes and Recipes can be Favorited by many Users
@@ -96,26 +91,5 @@ class Favorite(db.Model, SerializerMixin):
     user = db.relationship('User', back_populates = 'favorites')
     recipe = db.relationship('Recipe', back_populates = 'favorites')
 
-    # Need to use table_args unique constraint method due to needing multiple columns to be unique simultaneously. Ties the user and recipe to be unique combination
+    # Unique constraint to prevent duplicate favorites
     __table_args__ = (db.UniqueConstraint('user_id', 'recipe_id', name = 'unique_favorited_recipe'), )
-
-
-
-class Rating(db.Model, SerializerMixin):
-    __tablename__ = 'ratings'
-
-    serialize_rules = ('-user.ratings', '-recipe.ratings')
-
-    id = db.Column(db.Integer, primary_key = True)
-    rating = db.Column(db.Integer, db.CheckConstraint('1 <= rating <= 5'))
-
-    # Foreign Key created on the many side to point to 1 recipe
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
-    # Relationship variables
-    user = db.relationship('User', back_populates = 'ratings')
-    recipe = db.relationship('Recipe', back_populates = 'ratings')
-
-    # Need to use table_args unique constraint method due to needing multiple columns to be unique simultaneously. Ties the user and recipe to be unique combination
-    __table_args__ = (db.UniqueConstraint('user_id', 'recipe_id', name = 'unique_rating'),)
