@@ -85,12 +85,12 @@ class RecipeDetail(Resource):
     def get(self, id):
         recipe = Recipe.query.filter(Recipe.id == id).first()
         if recipe:
-            return recipe.to_dict(), 201
+            return recipe.to_dict(), 200
         else:
             return {'error' : 'Recipe not found'}, 404
 
     def put(self, id):
-        user_id = session['user_id']
+        user_id = session.get('user_id')
         if not user_id:
             return {'error' : 'Must be signed in'}, 401
         recipe = Recipe.query.filter(Recipe.id == id).first()
@@ -111,7 +111,100 @@ class RecipeDetail(Resource):
             return {'error': str(ve)}, 422
 
     def delete(self, id):
-        pass
+        user_id = session.get('user_id')
+        if not user_id:
+            return {'error' : 'Must be signed in'}, 401
+        recipe = Recipe.query.filter(Recipe.id == id).first()
+        if not recipe:
+            return {'error': 'Recipe not found'}, 404
+        if not recipe.user_id == user_id:
+            return {'error' : 'Unauthorized Page'}, 403
+        
+        db.session.delete(recipe)
+        db.session.commit()
+        return {'Success' : 'Recipe deleted'}, 200
+
+
+class FavoriteCollection(Resource):
+
+    def get(self):
+        user_id = session.get('user_id')
+        if not user_id:
+            return {'Error':'Must be signed in'}, 401
+        
+        favorites = Favorite.query.filter(Favorite.user_id == user_id).all()
+        return [favorite.to_dict() for favorite in favorites], 200
+
+    def post(self):
+        user_id = session.get('user_id')
+        if not user_id:
+            return {'Error':'Must be signed in'}, 401
+        
+        data = request.get_json()
+        note = data.get('note', '')
+        recipe_id = data.get('recipe_id')
+
+        if not recipe_id:
+            return {'error': 'Please provide the id of the recipe you wish to be favorited'}
+        
+        existing_favorite = Favorite.query.filter(Favorite.user_id == user_id, Favorite.recipe_id == recipe_id)
+        if existing_favorite:
+            return {'error': 'Recipe is already in your Favorites'}
+        
+        favorite = Favorite(user_id = user_id, recipe_id=recipe_id, note=note)
+
+        try:
+            db.session.add(favorite)
+            db.session.commit()
+            return favorite.to_dict(), 201
+        except Exception as e:
+            return {'error': str(e)}, 500
+
+class FavoriteDetail(Resource):
+
+    def get(self, id):
+        user_id = session.get('user_id')
+        if not user_id:
+            return {'Error':'Must be signed in'}, 401
+        favorite = Favorite.query.filter(Favorite.id == id, Favorite.user_id == user_id).first()
+        if not favorite:
+            return {'error' : 'Favorite not found'}, 404
+
+        return favorite.to_dict(), 200
+
+    def put(self, id):
+        user_id = session.get('user_id')
+        if not user_id:
+            return {'error' : 'Must be signed in'}, 401
+        favorite = Favorite.query.filter(Favorite.id == id, Favorite.user_id == user_id).first()
+        if not favorite:
+            return {'error': 'Favorite not found'}, 404
+        
+        note = request.get_json().get('note')
+        try:
+            db.session.commit()
+            return favorite.to_dict(), 200
+        except Exception as e:
+            return {'error': str(e)}, 500
+        
+
+    def delete(self, id):
+        user_id = session.get('user_id')
+        if not user_id:
+            return {'error': 'Must be signed in'}, 401
+
+        favorite = Favorite.query.filter_by(id=id, user_id=user_id).first()
+        if not favorite:
+            return {'error': 'Favorite not found'}, 404
+
+        try:
+            db.session.delete(favorite)
+            db.session.commit()
+            return {'message': 'Favorite deleted'}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 500
+
 
 class CheckSession(Resource):
     
@@ -127,7 +220,9 @@ api.add_resource(Signup, '/signup', endpoint='signup')
 api.add_resource(Login, '/login', endpoint='login')
 api.add_resource(Logout, '/logout', endpoint='logout')
 api.add_resource(RecipeCollection, '/recipes', endpoint='recipes')
-api.add_resource(RecipeDetail, '/recipes/<int:id>', endpoint='recipes_detail')
+api.add_resource(RecipeDetail, '/recipes/<int:id>', endpoint='recipe_detail')
+api.add_resource(FavoriteCollection, '/favorites', endpoint='favorites')
+api.add_resource(FavoriteDetail, '/favorites/<int:id>', endpoint='favorites_detail')
 api.add_resource(CheckSession, '/check_session', endpoint='check_session')
 
 @app.route('/')
