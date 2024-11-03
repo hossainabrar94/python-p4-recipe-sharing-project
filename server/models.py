@@ -9,7 +9,7 @@ from config import db, bcrypt
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
-    serialize_rules = ('-recipes.user', '-ratings.user', '-favorites.user', '-_password_hash')
+    serialize_rules = ('-recipes.user', '-favorites.user', '-_password_hash')
 
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String, nullable = False, unique = True)
@@ -22,7 +22,7 @@ class User(db.Model, SerializerMixin):
     favorites = db.relationship('Favorite', back_populates = 'user', cascade = 'all, delete-orphan')
 
     # Association Proxy connecting many-to-many between users and recipes table
-    favorited_recipe = db.relationship('favorites', 'recipes')
+    favorite_recipes = association_proxy('favorites', 'recipes')
 
     @property
     def password(self):
@@ -40,14 +40,15 @@ class User(db.Model, SerializerMixin):
     def validate_email(self, key, address):
         if '@' not in address:
             raise ValueError('Please enter a valid email address')
+        return address
 
 
 
-# One-to-Many Relationship - Recipe has many Ratings
+# One-to-Many Relationship
 class Recipe(db.Model, SerializerMixin):
     __tablename__ = 'recipes'
 
-    serialize_rules = ('-user.recipes','-favorites.recipe', '-ratings.recipe')
+    serialize_rules = ('-user.recipes','-favorites.recipe')
 
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String, nullable = False)
@@ -56,7 +57,7 @@ class Recipe(db.Model, SerializerMixin):
     image = db.Column(db.String)
 
     # Foreign Key created on the many side to point to 1 user
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False)
 
     # Relationship variables
     user = db.relationship('User', back_populates='recipes')
@@ -64,13 +65,14 @@ class Recipe(db.Model, SerializerMixin):
     favorites = db.relationship('Favorite', back_populates = 'recipe', cascade = 'all, delete-orphan')
 
     # Association Proxy connecting many-to-many between users and recipes table
-    users_who_favorited = db.relationship('favorites', 'users')
+    users_who_favorited = association_proxy('favorites', 'users')
     
     # ensuring lengthy instructions
     @validates('instructions')
     def validate_instructions(self, key, instructions):
         if len(instructions) < 50:
             raise ValueError('Please add some more details to the recipe instruction')
+        return instructions
 
 
 
@@ -84,8 +86,8 @@ class Favorite(db.Model, SerializerMixin):
     note = db.Column(db.String) # allows users to add a note-to-self when the favorite a recipe ie. 'add less sugar next time'
     
     # Foreign Key created on the many side to point to 1 user
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable = False)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), nullable = False)
 
     # Relationship variables
     user = db.relationship('User', back_populates = 'favorites')
