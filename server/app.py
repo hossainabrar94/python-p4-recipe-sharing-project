@@ -181,6 +181,7 @@ class FavoriteDetail(Resource):
             return {'error': 'Favorite not found'}, 404
         
         note = request.get_json().get('note')
+        favorite.note = note
         try:
             db.session.commit()
             return favorite.to_dict(), 200
