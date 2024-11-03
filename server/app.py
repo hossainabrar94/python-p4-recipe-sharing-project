@@ -21,7 +21,7 @@ class Signup(Resource):
         username = data.get('username')
         email = data.get('email')
         password = data.get('password')
-        if not username and not email and not password:
+        if not username or not email or not password:
             return {'Error':'All fields must be submitted'}, 400
         
         user = User()
@@ -32,6 +32,7 @@ class Signup(Resource):
             db.session.add(user)
             db.session.commit()
             session['user_id'] = user.id
+            return user.to_dict(), 201
         except IntegrityError:
             db.session.rollback()
             return {'Error': 'username or email already exists'}, 422
@@ -120,9 +121,13 @@ class RecipeDetail(Resource):
         if not recipe.user_id == user_id:
             return {'Error' : 'Unauthorized Page'}, 403
         
-        db.session.delete(recipe)
-        db.session.commit()
-        return {'Success' : 'Recipe deleted'}, 200
+        try:
+            db.session.delete(recipe)
+            db.session.commit()
+            return {'message': 'Recipe deleted'}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'error': str(e)}, 500
 
 
 class FavoriteCollection(Resource):
@@ -147,9 +152,9 @@ class FavoriteCollection(Resource):
         if not recipe_id:
             return {'Error': 'Please provide the id of the recipe you wish to be favorited'}
         
-        existing_favorite = Favorite.query.filter(Favorite.user_id == user_id, Favorite.recipe_id == recipe_id)
+        existing_favorite = Favorite.query.filter(Favorite.user_id == user_id, Favorite.recipe_id == recipe_id).first()
         if existing_favorite:
-            return {'Error': 'Recipe is already in your Favorites'}
+            return {'Error': 'Recipe is already in your Favorites'}, 401
         
         favorite = Favorite(user_id = user_id, recipe_id=recipe_id, note=note)
 
@@ -158,6 +163,7 @@ class FavoriteCollection(Resource):
             db.session.commit()
             return favorite.to_dict(), 201
         except Exception as e:
+            db.session.rollback()
             return {'Error': str(e)}, 500
 
 class FavoriteDetail(Resource):
@@ -180,12 +186,17 @@ class FavoriteDetail(Resource):
         if not favorite:
             return {'Error': 'Favorite not found'}, 404
         
-        note = request.get_json().get('note')
-        favorite.note = note
+        data = request.get_json()
+        if 'note' in data:
+            favorite.note = data['note']
+        else:
+            return {'Error': 'No data provided to update'}, 400
+        
         try:
             db.session.commit()
             return favorite.to_dict(), 200
         except Exception as e:
+            db.session.rollback()
             return {'Error': str(e)}, 500
         
 
