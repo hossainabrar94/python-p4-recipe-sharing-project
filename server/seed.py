@@ -28,7 +28,7 @@ if __name__ == '__main__':
             user = User(
                 username=fake.user_name(),
                 email=fake.email(),
-                password='password123'  
+                password= user.username + 'password'
             )
             users.append(user)
         db.session.add_all(users)
