@@ -6,26 +6,35 @@ import { Link } from "react-router-dom";
 
 function LoginPage({ onLogin }) {
 
+
+
     return (
-        <Wrapper>
-          <Logo>Reciplease</Logo>
-          <LoginForm onLogin={onLogin} />
-          <Divider />
-          <p>
-            Don't have an account? &nbsp;
-            <Button as={Link} to="/signup" color="secondary">
-              Sign Up
-            </Button>
-          </p>
-        </Wrapper>
+      <Wrapper>
+        <Logo>The Recipe Hub </Logo>
+        <br/>
+        <LoginForm onLogin={onLogin} />
+        <Divider />
+        <p>
+          Don't have an account? &nbsp;
+          <Button as={Link} to="/signup" color="secondary">
+            Sign Up
+          </Button>
+        </p>
+      </Wrapper>
       );
 }
 
-const Logo = styled.h1`
+const Logo = styled.h2`
   font-family: "Permanent Marker", cursive;
   font-size: 3rem;
-  color: deeppink;
-  margin: 8px 0 16px;
+  color: darkred;
+  margin: 0;
+  line-height: 1;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 `;
 
 const Wrapper = styled.section`

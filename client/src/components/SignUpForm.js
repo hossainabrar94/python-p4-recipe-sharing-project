@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import { useHistory } from "react-router-dom"; 
 import { Button, Error, Input, FormField, Label } from "../styles";
 
-function SignUpForm({  }) {
+function SignUpForm({ onLogin }) {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -9,10 +10,12 @@ function SignUpForm({  }) {
     const [errors, setErrors] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    const history = useHistory()
+
     function handleSubmit(e){
         e.preventDefault();
         setErrors([]);
-        setIsLoading(True);
+        setIsLoading(true);
         fetch("/signup", {
             method: 'POST',
             headers: {"Content-Type": "application/json"},
@@ -27,11 +30,17 @@ function SignUpForm({  }) {
             setIsLoading(false);
             if (r.ok) {
               r.json().then((user) => onLogin(user));
+              history.push('/')
             } else {
-              r.json().then((err) => setErrors(err.errors));
+              r.json().then((err) => setErrors(err.error || ["An error occured with the submission"]));
             }
+            
           })
-    }
+        .catch((error) => {
+            setErrors(["An unexpected error occurred. Please try again."]);
+            setIsLoading(false);
+        });
+    }   
 
     return (
         <form onSubmit={handleSubmit}>
@@ -70,7 +79,7 @@ function SignUpForm({  }) {
                 <Input 
                     type="password"
                     id="password_confirmation"
-                    value={password}
+                    value={passwordConfirmation}
                     onChange={(e) => setPasswordConfirmation(e.target.value)}
                     autoComplete="current-password"
                 />

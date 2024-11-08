@@ -9,7 +9,7 @@ from config import db, bcrypt
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
-    serialize_rules = ('-recipes.user', '-favorites.user', '-_password_hash')
+    serialize_rules = ('-recipes.user', '-favorites.user' , '-favorites.recipe', '-_password_hash')
 
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String, nullable = False, unique = True)
@@ -22,7 +22,7 @@ class User(db.Model, SerializerMixin):
     favorites = db.relationship('Favorite', back_populates = 'user', cascade = 'all, delete-orphan')
 
     # Association Proxy connecting many-to-many between users and recipes table
-    favorite_recipes = association_proxy('favorites', 'recipes')
+    favorite_recipes = association_proxy('favorites', 'recipe')
 
     @property
     def password(self):
@@ -48,7 +48,7 @@ class User(db.Model, SerializerMixin):
 class Recipe(db.Model, SerializerMixin):
     __tablename__ = 'recipes'
 
-    serialize_rules = ('-user.recipes','-favorites.recipe')
+    serialize_rules = ('-user.recipes','-favorites.recipe', '-favorites.user')
 
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String, nullable = False)
@@ -65,7 +65,7 @@ class Recipe(db.Model, SerializerMixin):
     favorites = db.relationship('Favorite', back_populates = 'recipe', cascade = 'all, delete-orphan')
 
     # Association Proxy connecting many-to-many between users and recipes table
-    users_who_favorited = association_proxy('favorites', 'users')
+    users_who_favorited = association_proxy('favorites', 'user')
     
     # ensuring lengthy instructions
     @validates('instructions')
@@ -80,7 +80,7 @@ class Recipe(db.Model, SerializerMixin):
 class Favorite(db.Model, SerializerMixin):
     __tablename__ = 'favorites'
 
-    serialize_rules = ('-user.favorites', '-recipe.favorites')
+    serialize_rules = ('-user.favorites', '-user.recipes', '-recipe.favorites', '-recipe.user')
 
     id = db.Column(db.Integer, primary_key = True)
     note = db.Column(db.String) # allows users to add a note-to-self when the favorite a recipe ie. 'add less sugar next time'

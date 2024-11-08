@@ -22,20 +22,19 @@ class Signup(Resource):
         email = data.get('email')
         password = data.get('password')
         if not username or not email or not password:
-            return {'Error':'All fields must be submitted'}, 400
+            return {'error':'All fields must be submitted'}, 400
         
-        user = User()
-        for field in ['username', 'email', 'password']:
-            setattr(user, field, data.get(field))
+        user = User(username=username, email=email)
 
         try:
+            user.password = password
             db.session.add(user)
             db.session.commit()
             session['user_id'] = user.id
             return user.to_dict(), 201
         except IntegrityError:
             db.session.rollback()
-            return {'Error': 'username or email already exists'}, 422
+            return {'error': 'username or email already exists'}, 422
         
 class Login(Resource):
     
@@ -54,7 +53,7 @@ class Logout(Resource):
             session['user_id'] = None
             return {}, 204
         else:
-            return {'Error': 'User not logged in'}, 401
+            return {'error': 'User not logged in'}, 401
 
 class RecipeCollection(Resource):
     
@@ -66,7 +65,7 @@ class RecipeCollection(Resource):
         user_id = session.get('user_id')
         
         if not user_id:
-            return {'Error':'Must be signed in'}, 401
+            return {'error':'Must be signed in'}, 401
         
         data = request.get_json()
         try:
@@ -79,7 +78,7 @@ class RecipeCollection(Resource):
             return recipe.to_dict(), 201
         except ValueError as ve:
             db.session.rollback()
-            return {'Error': str(ve)}, 422
+            return {'error': str(ve)}, 422
 
 class RecipeDetail(Resource):
     
@@ -88,17 +87,17 @@ class RecipeDetail(Resource):
         if recipe:
             return recipe.to_dict(), 200
         else:
-            return {'Error' : 'Recipe not found'}, 404
+            return {'error' : 'Recipe not found'}, 404
 
     def put(self, id):
         user_id = session.get('user_id')
         if not user_id:
-            return {'Error' : 'Must be signed in'}, 401
+            return {'error' : 'Must be signed in'}, 401
         recipe = Recipe.query.filter(Recipe.id == id).first()
         if not recipe:
-            return {'Error': 'Recipe not found'}, 404
+            return {'error': 'Recipe not found'}, 404
         if not recipe.user_id == user_id:
-            return {'Error' : 'Unauthorized Page'}, 403
+            return {'error' : 'Unauthorized Page'}, 403
         
         data = request.get_json()
         try:
@@ -109,17 +108,17 @@ class RecipeDetail(Resource):
             return recipe.to_dict(), 200
         except ValueError as ve:
             db.session.rollback()
-            return {'Error': str(ve)}, 422
+            return {'error': str(ve)}, 422
 
     def delete(self, id):
         user_id = session.get('user_id')
         if not user_id:
-            return {'Error' : 'Must be signed in'}, 401
+            return {'error' : 'Must be signed in'}, 401
         recipe = Recipe.query.filter(Recipe.id == id).first()
         if not recipe:
-            return {'Error': 'Recipe not found'}, 404
+            return {'error': 'Recipe not found'}, 404
         if not recipe.user_id == user_id:
-            return {'Error' : 'Unauthorized Page'}, 403
+            return {'error' : 'Unauthorized Page'}, 403
         
         try:
             db.session.delete(recipe)
@@ -135,7 +134,7 @@ class FavoriteCollection(Resource):
     def get(self):
         user_id = session.get('user_id')
         if not user_id:
-            return {'Error':'Must be signed in'}, 401
+            return {'error':'Must be signed in'}, 401
         
         favorites = Favorite.query.filter(Favorite.user_id == user_id).all()
         return [favorite.to_dict() for favorite in favorites], 200
@@ -143,18 +142,18 @@ class FavoriteCollection(Resource):
     def post(self):
         user_id = session.get('user_id')
         if not user_id:
-            return {'Error':'Must be signed in'}, 401
+            return {'error':'Must be signed in'}, 401
         
         data = request.get_json()
         note = data.get('note', '')
         recipe_id = data.get('recipe_id')
 
         if not recipe_id:
-            return {'Error': 'Please provide the id of the recipe you wish to be favorited'}
+            return {'error': 'Please provide the id of the recipe you wish to be favorited'}
         
         existing_favorite = Favorite.query.filter(Favorite.user_id == user_id, Favorite.recipe_id == recipe_id).first()
         if existing_favorite:
-            return {'Error': 'Recipe is already in your Favorites'}, 401
+            return {'error': 'Recipe is already in your Favorites'}, 401
         
         favorite = Favorite(user_id = user_id, recipe_id=recipe_id, note=note)
 
@@ -164,50 +163,50 @@ class FavoriteCollection(Resource):
             return favorite.to_dict(), 201
         except Exception as e:
             db.session.rollback()
-            return {'Error': str(e)}, 500
+            return {'error': str(e)}, 500
 
 class FavoriteDetail(Resource):
 
     def get(self, id):
         user_id = session.get('user_id')
         if not user_id:
-            return {'Error':'Must be signed in'}, 401
+            return {'error':'Must be signed in'}, 401
         favorite = Favorite.query.filter(Favorite.id == id, Favorite.user_id == user_id).first()
         if not favorite:
-            return {'Error' : 'Favorite not found'}, 404
+            return {'error' : 'Favorite not found'}, 404
 
         return favorite.to_dict(), 200
 
     def put(self, id):
         user_id = session.get('user_id')
         if not user_id:
-            return {'Error' : 'Must be signed in'}, 401
+            return {'error' : 'Must be signed in'}, 401
         favorite = Favorite.query.filter(Favorite.id == id, Favorite.user_id == user_id).first()
         if not favorite:
-            return {'Error': 'Favorite not found'}, 404
+            return {'error': 'Favorite not found'}, 404
         
         data = request.get_json()
         if 'note' in data:
             favorite.note = data['note']
         else:
-            return {'Error': 'No data provided to update'}, 400
+            return {'error': 'No data provided to update'}, 400
         
         try:
             db.session.commit()
             return favorite.to_dict(), 200
         except Exception as e:
             db.session.rollback()
-            return {'Error': str(e)}, 500
+            return {'error': str(e)}, 500
         
 
     def delete(self, id):
         user_id = session.get('user_id')
         if not user_id:
-            return {'Error': 'Must be signed in'}, 401
+            return {'error': 'Must be signed in'}, 401
 
         favorite = Favorite.query.filter_by(id=id, user_id=user_id).first()
         if not favorite:
-            return {'Error': 'Favorite not found'}, 404
+            return {'error': 'Favorite not found'}, 404
 
         try:
             db.session.delete(favorite)
@@ -215,7 +214,7 @@ class FavoriteDetail(Resource):
             return {'message': 'Favorite deleted'}, 200
         except Exception as e:
             db.session.rollback()
-            return {'Error': str(e)}, 500
+            return {'error': str(e)}, 500
 
 
 class CheckSession(Resource):
@@ -225,7 +224,7 @@ class CheckSession(Resource):
         if user_id:
             user = User.query.filter(User.id == user_id).first()
             return user.to_dict(), 200
-        return {'Error': 'Unauthorized'}, 401
+        return {'error': 'Unauthorized'}, 401
 
 
 api.add_resource(Signup, '/signup', endpoint='signup')
@@ -244,4 +243,4 @@ def index():
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
-
+    

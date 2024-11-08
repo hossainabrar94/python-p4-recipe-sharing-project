@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Switch, Route } from "react-router-dom";
+import HomePage from "../pages/HomePage";
+import CreateRecipePage from "../pages/CreateRecipePage";
+import Header from "./Header";
+import LoginPage from "../pages/LoginPage";
+import SignUpPage from "../pages/SignUpPage";
 
 function App() {
 
   const [user, setUser] = useState(null);
+  const [recipes, setRecipes] = useState([])
 
   useEffect(() => {
     // auto-login
@@ -12,20 +18,29 @@ function App() {
         r.json().then((user) => setUser(user));
       }
     });
-  }, []);
 
-  if (!user) return <HomePage />;
+    // Fetch all recipes
+    fetch("/recipes")
+    .then((r) => r.json())
+    .then(setRecipes)
+  }, []);
 
   return (
     <>
-      <NavBar user={user} setUser={setUser} />
+    {/* <Header user={user} setUser={setUser} /> */}
       <main>
         <Switch>
+          <Route path ="/login">
+            <LoginPage onLogin = {setUser}/>
+          </Route>
+          <Route path ="/signup">
+            <SignUpPage onSignUp = {setUser}/>
+          </Route>
           <Route path="/create">
-            <CreateRecipePage user={user} />
+          { user ? <CreateRecipePage user = {user} /> : <HomePage user = {user} recipes = {recipes} /> }
           </Route>
           <Route path="/">
-            <RecipeList />
+            <HomePage user = {user} recipes = {recipes}/>
           </Route>
         </Switch>
       </main>

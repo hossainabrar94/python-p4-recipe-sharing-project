@@ -4,9 +4,11 @@ import SignUpForm from "../components/SignUpForm";
 import { Button } from "../styles";
 
 function SignUpPage({ onLogin }) {
+  
   return (
     <Wrapper>
-      <Logo>Reciplease</Logo>
+      <Logo>The Recipe Hub </Logo>
+      <br/>
       <SignUpForm onLogin={onLogin} />
       <Divider />
       <p>
@@ -18,5 +20,30 @@ function SignUpPage({ onLogin }) {
     </Wrapper>
   );
 }
+
+const Logo = styled.h2`
+  font-family: "Permanent Marker", cursive;
+  font-size: 3rem;
+  color: darkred;
+  margin: 0;
+  line-height: 1;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+`;
+
+const Wrapper = styled.section`
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 16px;
+`;
+
+const Divider = styled.hr`
+  border: none;
+  border-bottom: 1px solid #ccc;
+  margin: 16px 0;
+`;
 
 export default SignUpPage;

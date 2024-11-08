@@ -2,6 +2,8 @@
 
 # Standard library imports
 from random import randint, choice as rc
+from itertools import product
+import random
 
 # Remote library imports
 from faker import Faker
@@ -28,7 +30,7 @@ if __name__ == '__main__':
             user = User(
                 username=fake.user_name(),
                 email=fake.email(),
-                password= user.username + 'password'
+                password= 'password123'
             )
             users.append(user)
         db.session.add_all(users)
@@ -50,15 +52,10 @@ if __name__ == '__main__':
 
         print("Creating favorites...")
         favorites = []
-        for i in range(40):
-            user = rc(users)
-            recipe = rc(recipes)
-            
-            # Check if the favorite already exists to prevent duplicates
-            existing_favorite = Favorite.query.filter_by(user_id=user.id, recipe_id=recipe.id).first()
-            if existing_favorite:
-                continue
-            
+        user_recipe_pairs = list(product(users, recipes))
+        random.shuffle(user_recipe_pairs)
+
+        for user, recipe in user_recipe_pairs[:30]:
             favorite = Favorite(
                 note=fake.sentence(nb_words=10),
                 user_id=user.id,
@@ -67,5 +64,6 @@ if __name__ == '__main__':
             favorites.append(favorite)
         db.session.add_all(favorites)
         db.session.commit()
+        print(f"Number of favorites created: {len(favorites)}")
 
         print("Seeding has completed!")
