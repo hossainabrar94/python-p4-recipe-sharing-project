@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 import SignUpForm from "../components/SignUpForm";
 import { Button } from "../styles";
 
-function SignUpPage({ onLogin }) {
+function SignUpPage({ onSignUp }) {
   
   return (
     <Wrapper>
       <Logo>The Recipe Hub </Logo>
       <br/>
-      <SignUpForm onLogin={onLogin} />
+      <SignUpForm onSignUp={onSignUp} />
       <Divider />
       <p>
         Already have an account? &nbsp;
@@ -22,7 +22,7 @@ function SignUpPage({ onLogin }) {
 }
 
 const Logo = styled.h2`
-  font-family: "Permanent Marker", cursive;
+  font-family: "Pacifico", cursive;
   font-size: 3rem;
   color: darkred;
   margin: 0;

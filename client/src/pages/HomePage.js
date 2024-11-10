@@ -8,11 +8,10 @@ function HomePage({ user, recipes = [] }) {
 
   return (
     <>
-    <Header />
         <Wrapper>
             <Logo>
                 <h2>Welcome to The Recipe Hub</h2>
-                <h6>Login to Create Your Very Own Recipe Book</h6>
+                {user ? '' :<h6>Login to Create Your Very Own Recipe Book</h6> }
             </Logo>
             <RecipeGrid>
             {recipes.map((recipe) => (
@@ -41,8 +40,8 @@ const RecipeGrid = styled.div`
   gap: 16px;
 `;
 
-const Logo = styled.h2`
-  font-family: "Permanent Marker", cursive;
+const Logo = styled.div`
+  font-family: "Pacifico";
   font-size: 3rem;
   color: darkred;
   margin: 0;

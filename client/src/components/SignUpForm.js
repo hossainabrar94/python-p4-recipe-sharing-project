@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useHistory } from "react-router-dom"; 
 import { Button, Error, Input, FormField, Label } from "../styles";
 
-function SignUpForm({ onLogin }) {
+function SignUpForm({ onSignUp }) {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -15,6 +15,12 @@ function SignUpForm({ onLogin }) {
     function handleSubmit(e){
         e.preventDefault();
         setErrors([]);
+
+        if (password !== passwordConfirmation) {
+            setErrors(['Password confirmation did not match'])
+            return;
+        }
+
         setIsLoading(true);
         fetch("/signup", {
             method: 'POST',
@@ -29,10 +35,10 @@ function SignUpForm({ onLogin }) {
         .then((r) => {
             setIsLoading(false);
             if (r.ok) {
-              r.json().then((user) => onLogin(user));
+              r.json().then((user) => onSignUp(user));
               history.push('/')
             } else {
-              r.json().then((err) => setErrors(err.error || ["An error occured with the submission"]));
+              r.json().then((err) => setErrors(err.errors || ["An error occured with the submission"]));
             }
             
           })
@@ -75,7 +81,7 @@ function SignUpForm({ onLogin }) {
                 />
             </FormField>
             <FormField>
-                <Label htmlFor = "password">Password Confirmation</Label>
+                <Label htmlFor = "password_confirmation">Password Confirmation</Label>
                 <Input 
                     type="password"
                     id="password_confirmation"
@@ -88,8 +94,8 @@ function SignUpForm({ onLogin }) {
                 <Button type="submit">{isLoading ? "Loading..." : "Sign Up"}</Button>
             </FormField>
             <FormField>
-                {errors.map((err) => (
-                <Error key={err}>{err}</Error>
+                {Array.isArray(errors) && errors.map((err) => (
+                    <Error key={err}>{err}</Error>
                 ))}
             </FormField>
         </form>

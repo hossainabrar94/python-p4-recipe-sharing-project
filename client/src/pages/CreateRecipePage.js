@@ -4,7 +4,7 @@ import styled from "styled-components";
 import ReactMarkdown from "react-markdown";
 import { Button, Error, FormField, Input, Label, Textarea } from "../styles";
 
-function CreateRecipePage({ user }) {
+function CreateRecipePage({ user, onAddRecipe }) {
   const [title, setTitle] = useState("My Awesome Recipe");
   const [minutesToComplete, setMinutesToComplete] = useState("30");
   const [instructions, setInstructions] = useState(`Here's how you make it.`);
@@ -30,7 +30,11 @@ function CreateRecipePage({ user }) {
     }).then((r) => {
       setIsLoading(false);
       if (r.ok) {
-        history.push("/");
+        r.json()
+        .then((newRecipe) => {
+          onAddRecipe(newRecipe)
+          history.push("/");
+        })
       } else {
         r.json().then((err) => setErrors(err.errors));
       }

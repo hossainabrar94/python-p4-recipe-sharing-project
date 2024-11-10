@@ -17,6 +17,9 @@ function App() {
       if (r.ok) {
         r.json().then((user) => setUser(user));
       }
+      else {
+        console.log('User not logged in')
+      }
     });
 
     // Fetch all recipes
@@ -25,9 +28,12 @@ function App() {
     .then(setRecipes)
   }, []);
 
+  function handleAddedRecipe(newRecipe) {
+    setRecipes((recipes) => [...recipes, newRecipe])
+  }
+
   return (
     <>
-    {/* <Header user={user} setUser={setUser} /> */}
       <main>
         <Switch>
           <Route path ="/login">
@@ -37,9 +43,11 @@ function App() {
             <SignUpPage onSignUp = {setUser}/>
           </Route>
           <Route path="/create">
-          { user ? <CreateRecipePage user = {user} /> : <HomePage user = {user} recipes = {recipes} /> }
+          <Header user={user} setUser={setUser} />
+          { user ? <CreateRecipePage user = {user} onAddRecipe = {handleAddedRecipe} /> : <HomePage user = {user} recipes = {recipes} /> }
           </Route>
           <Route path="/">
+            <Header user={user} setUser={setUser} />
             <HomePage user = {user} recipes = {recipes}/>
           </Route>
         </Switch>

@@ -25,7 +25,7 @@ function LoginPage({ onLogin }) {
 }
 
 const Logo = styled.h2`
-  font-family: "Permanent Marker", cursive;
+  font-family: "Pacifico", cursive;
   font-size: 3rem;
   color: darkred;
   margin: 0;
