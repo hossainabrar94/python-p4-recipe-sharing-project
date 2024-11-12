@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import RecipeCard from "../components/RecipeCard";
-import Header from "../components/Header";
 
 function HomePage({ user, recipes = [] }) {
 
@@ -10,7 +9,7 @@ function HomePage({ user, recipes = [] }) {
     <>
         <Wrapper>
             <Logo>
-                <h2>Welcome to The Recipe Hub</h2>
+                <h2>🧑🏼‍🍳 Welcome to The Recipe Hub</h2>
                 {user ? '' :<h6>Login to Create Your Very Own Recipe Book</h6> }
             </Logo>
             <RecipeGrid>
@@ -41,9 +40,9 @@ const RecipeGrid = styled.div`
 `;
 
 const Logo = styled.div`
-  font-family: "Pacifico";
+  font-family: "Pacifico", cursive;
   font-size: 3rem;
-  color: darkred;
+  color: black;
   margin: 0;
   line-height: 1;
 

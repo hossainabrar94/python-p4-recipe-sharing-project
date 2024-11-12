@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { Button } from "../styles";
-import LoginPage from "../pages/LoginPage";
 
 function Header({ user, setUser }) {
   
@@ -26,6 +25,12 @@ function Header({ user, setUser }) {
             <Button as={Link} to="/create">
                 Share a Recipe
             </Button>
+            <Button as = {Link} to="/my-recipes">
+                My Recipes
+            </Button>
+            <Button as ={Link} to='/favorites'>
+                Favorites
+            </Button>
             <Button variant="outline" onClick={handleLogoutClick}>
               Logout
             </Button>
@@ -47,15 +52,15 @@ function Header({ user, setUser }) {
 
 const Wrapper = styled.header`
   display: flex;
-  justify-content: center;
-  align-items: center;
   padding: 8px;
 `;
+//  justify-content: center;
+//  align-items: center;
 
 const Logo = styled.h1`
   font-family: "Lobster", cursive;
   font-size: 3rem;
-  color: darkred;
+  color: black;
   margin: 0;
   line-height: 1;
 

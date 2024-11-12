@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-function RecipeCard({recipe}) {
+function RecipeCard({recipe, note}) {
 
     const description = recipe.instructions.slice(0,70) + '...';
 
@@ -11,7 +11,13 @@ function RecipeCard({recipe}) {
             <Content>
                 <Title> {recipe.title} </Title>
                 <Minutes> Cook Time: {recipe.minutes_to_complete} min  </Minutes>
-                <Description> {description} </Description>
+                {note ? (
+                <NoteContainer>
+                    <NoteLabel>Your Note:</NoteLabel>
+                    <Note>{note}</Note>
+                </NoteContainer>
+                ) : null}
+                <Description> {description} </Description>                
             </Content>
         </Card>
     )
@@ -50,6 +56,20 @@ const Description = styled.p`
 
 const Minutes = styled.span`
   font-style: italic
+`;
+
+const NoteContainer = styled.div`
+  margin-top: 10px;
+`;
+
+const NoteLabel = styled.p`
+  font-weight: bold;
+  margin: 0;
+`;
+
+const Note = styled.p`
+  font-style: italic;
+  margin: 5px 0 0;
 `;
 
 export default RecipeCard;

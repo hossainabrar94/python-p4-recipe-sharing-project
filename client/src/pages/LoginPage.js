@@ -1,12 +1,9 @@
-import { useState } from "react";
 import styled from "styled-components";
 import LoginForm from "../components/LoginForm";
 import { Button } from "../styles";
 import { Link } from "react-router-dom";
 
 function LoginPage({ onLogin }) {
-
-
 
     return (
       <Wrapper>

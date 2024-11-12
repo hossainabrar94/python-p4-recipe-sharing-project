@@ -5,17 +5,27 @@ import CreateRecipePage from "../pages/CreateRecipePage";
 import Header from "./Header";
 import LoginPage from "../pages/LoginPage";
 import SignUpPage from "../pages/SignUpPage";
+import MyRecipesPage from "../pages/MyRecipesPage";
+import RecipeDetailPage from "../pages/RecipeDetailPage";
+import EditRecipePage from "../pages/EditRecipePage";
+import FavoritePage from "../pages/FavoritesPage";
 
 function App() {
 
   const [user, setUser] = useState(null);
   const [recipes, setRecipes] = useState([])
+  const [favoriteRecipes, setFavoriteRecipes] = useState([])
 
   useEffect(() => {
     // auto-login
     fetch("/check_session").then((r) => {
       if (r.ok) {
-        r.json().then((user) => setUser(user));
+        r.json().then((user) => {
+          setUser(user);
+          fetch('/favorites')
+          .then((r) => r.json())
+          .then(setFavoriteRecipes);
+        })
       }
       else {
         console.log('User not logged in')
@@ -32,6 +42,12 @@ function App() {
     setRecipes((recipes) => [...recipes, newRecipe])
   }
 
+  function handleUpdatedRecipe(updatedRecipe){
+    setRecipes((prevRecipes) => 
+      prevRecipes.map((prevRecipe) => prevRecipe.id === updatedRecipe.id ? updatedRecipe: prevRecipe)
+    )
+  }
+
   return (
     <>
       <main>
@@ -44,7 +60,19 @@ function App() {
           </Route>
           <Route path="/create">
           <Header user={user} setUser={setUser} />
-          { user ? <CreateRecipePage user = {user} onAddRecipe = {handleAddedRecipe} /> : <HomePage user = {user} recipes = {recipes} /> }
+          { user ? (<CreateRecipePage user = {user} onAddRecipe = {handleAddedRecipe} />) : (<HomePage user = {user} recipes = {recipes} /> )}
+          </Route>
+          <Route path = "/my-recipes">
+            {user ? <MyRecipesPage user = {user} recipes = {recipes}/> : <HomePage user = {user} recipes = {recipes} />}
+          </Route>
+          <Route path="/recipes/:id/edit">
+            <EditRecipePage user = {user} handleUpdatedRecipe = {handleUpdatedRecipe}/>
+          </Route>
+          <Route path="/recipes/:id">
+            {user ? <RecipeDetailPage user={user} setRecipes = {setRecipes} favoriteRecipes={favoriteRecipes} setFavoriteRecipes ={setFavoriteRecipes}/> : <HomePage user = {user} recipes = {recipes} />}
+          </Route>
+          <Route path="/favorites">
+            {user ? <FavoritePage user = {user} recipes = {recipes} favoriteRecipes={favoriteRecipes}/> : <HomePage user = {user} recipes = {recipes} />}
           </Route>
           <Route path="/">
             <Header user={user} setUser={setUser} />
