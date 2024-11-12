@@ -2,11 +2,13 @@ import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import RecipeCard from "../components/RecipeCard";
+import Header from "../components/Header";
 
-function HomePage({ user, recipes = [] }) {
+function HomePage({ user, setUser, recipes = [] }) {
 
   return (
     <>
+        <Header user={user} setUser={setUser} />
         <Wrapper>
             <Logo>
                 <h2>🧑🏼‍🍳 Welcome to The Recipe Hub</h2>

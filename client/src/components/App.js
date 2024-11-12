@@ -60,23 +60,22 @@ function App() {
           </Route>
           <Route path="/create">
           <Header user={user} setUser={setUser} />
-          { user ? (<CreateRecipePage user = {user} onAddRecipe = {handleAddedRecipe} />) : (<HomePage user = {user} recipes = {recipes} /> )}
+          { user ? (<CreateRecipePage user = {user} onAddRecipe = {handleAddedRecipe} />) : (<HomePage user = {user} setUser={setUser} recipes = {recipes} /> )}
           </Route>
           <Route path = "/my-recipes">
-            {user ? <MyRecipesPage user = {user} recipes = {recipes}/> : <HomePage user = {user} recipes = {recipes} />}
+            {user ? <MyRecipesPage user = {user} setUser={setUser} recipes = {recipes}/> : <HomePage user = {user} setUser={setUser} recipes = {recipes} />}
           </Route>
           <Route path="/recipes/:id/edit">
             <EditRecipePage user = {user} handleUpdatedRecipe = {handleUpdatedRecipe}/>
           </Route>
           <Route path="/recipes/:id">
-            {user ? <RecipeDetailPage user={user} setRecipes = {setRecipes} favoriteRecipes={favoriteRecipes} setFavoriteRecipes ={setFavoriteRecipes}/> : <HomePage user = {user} recipes = {recipes} />}
+            {user ? <RecipeDetailPage user={user} setUser={setUser} setRecipes = {setRecipes} favoriteRecipes={favoriteRecipes} setFavoriteRecipes ={setFavoriteRecipes}/> : <HomePage user = {user} setUser={setUser} recipes = {recipes} />}
           </Route>
           <Route path="/favorites">
-            {user ? <FavoritePage user = {user} favoriteRecipes={favoriteRecipes}/> : <HomePage user = {user} recipes = {recipes} />}
+            {user ? <FavoritePage user = {user} setUser={setUser} recipes = {recipes} favoriteRecipes={favoriteRecipes}/> : <HomePage user = {user} setUser={setUser} recipes = {recipes} />}
           </Route>
           <Route path="/">
-            <Header user={user} setUser={setUser} />
-            <HomePage user = {user} recipes = {recipes}/>
+            <HomePage user = {user} setUser={setUser} recipes = {recipes}/>
           </Route>
         </Switch>
       </main>

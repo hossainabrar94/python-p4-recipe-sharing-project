@@ -4,12 +4,12 @@ import RecipeCard from "../components/RecipeCard";
 import Header from "../components/Header";
 
 
-function FavoritePage({ user, recipes, favoriteRecipes }){
+function FavoritePage({ user, setUser, favoriteRecipes }){
 
     return (
         <>
             <HeaderWrapper>
-                <Header user={user}/>
+                <Header user={user} setUser={setUser}/>
             </HeaderWrapper>
             <Wrapper>
                 <Logo>

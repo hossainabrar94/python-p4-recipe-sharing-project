@@ -3,7 +3,7 @@ import { useParams, Link, useHistory } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../components/Header";
 
-function RecipeDetailPage({user, setRecipes, favoriteRecipes, setFavoriteRecipes}) {
+function RecipeDetailPage({user, setUser, setRecipes, favoriteRecipes, setFavoriteRecipes}) {
     
     const {id} = useParams()
     const [recipe, setRecipe] = useState(null);
@@ -114,7 +114,7 @@ function RecipeDetailPage({user, setRecipes, favoriteRecipes, setFavoriteRecipes
     
     return (
         <>
-            <Header user = {user}/>
+            <Header user = {user} setUser={setUser}/>
             <Container>
             <Title>{recipe.title}</Title>
             <Image src={recipe.image} alt={recipe.title} />

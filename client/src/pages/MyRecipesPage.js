@@ -4,14 +4,14 @@ import styled from "styled-components";
 import RecipeCard from "../components/RecipeCard";
 import Header from "../components/Header";
 
-function MyRecipesPage({ user, recipes }){
+function MyRecipesPage({ user, setUser, recipes }){
 
     const myRecipes = recipes.filter((recipe) => recipe.user_id === user.id);
 
     return (
         <>
             <HeaderWrapper>
-                <Header user={user}/>
+                <Header user={user} setUser={setUser}/>
             </HeaderWrapper>
             <Wrapper>
                 <Logo>
