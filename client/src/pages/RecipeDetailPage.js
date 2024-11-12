@@ -61,33 +61,6 @@ function RecipeDetailPage({user, setRecipes, favoriteRecipes, setFavoriteRecipes
 
     const faveRecipeCheck = favoriteRecipes.find((faveRecipe) => faveRecipe.recipe_id === recipe.id)
 
-    function handleFavoriteAdd(){
-        setShowNoteInput(true)
-        if(!faveRecipeCheck){
-            fetch('/favorites', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  recipe_id: recipe.id,
-                  note: note,
-                })
-            })
-            .then((r) => {
-                if (r.ok){
-                    r.json()
-                    .then((newFave) => {
-                        setFavoriteRecipes((prevList) => [...prevList, recipe])
-                        setShowNoteInput(false)
-                        setNote('')
-                    })
-                } else {
-                    r.json()
-                    .then((err) => console.error(err.errors));
-                }
-            })
-        }
-    }
-
     function handleFavoriteRemove(){
         console.log('Remove from Favorites clicked')
         if(faveRecipeCheck){
@@ -105,6 +78,12 @@ function RecipeDetailPage({user, setRecipes, favoriteRecipes, setFavoriteRecipes
                 }
             });
         }
+    }
+
+    const favoriteNote = faveRecipeCheck ? faveRecipeCheck.note : null;
+    
+    function handleFavoriteAdd(){
+        setShowNoteInput(true)
     }
 
     function handleFavoriteSubmit() {
@@ -180,6 +159,12 @@ function RecipeDetailPage({user, setRecipes, favoriteRecipes, setFavoriteRecipes
                 )
             )}
             <Minutes>Cook Time: {recipe.minutes_to_complete} min</Minutes>
+            {favoriteNote ? (
+                <NoteContainer>
+                    <NoteLabel>Your Note:</NoteLabel>
+                    <Note>{favoriteNote}</Note>
+                </NoteContainer>
+                ) : null}
             <Details>
                 <Instructions>
                 <strong>Instructions:</strong>
@@ -298,6 +283,11 @@ const CancelNoteButton = styled.button`
   border-radius: 4px;
   cursor: pointer;
   margin-left: 10px;
+`;
+
+const Note = styled.p`
+  font-style: italic;
+  margin-top: 5px;
 `;
 
 export default RecipeDetailPage;

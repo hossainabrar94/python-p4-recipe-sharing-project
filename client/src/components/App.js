@@ -72,7 +72,7 @@ function App() {
             {user ? <RecipeDetailPage user={user} setRecipes = {setRecipes} favoriteRecipes={favoriteRecipes} setFavoriteRecipes ={setFavoriteRecipes}/> : <HomePage user = {user} recipes = {recipes} />}
           </Route>
           <Route path="/favorites">
-            {user ? <FavoritePage user = {user} recipes = {recipes} favoriteRecipes={favoriteRecipes}/> : <HomePage user = {user} recipes = {recipes} />}
+            {user ? <FavoritePage user = {user} favoriteRecipes={favoriteRecipes}/> : <HomePage user = {user} recipes = {recipes} />}
           </Route>
           <Route path="/">
             <Header user={user} setUser={setUser} />

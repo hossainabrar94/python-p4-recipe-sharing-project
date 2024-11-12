@@ -5,12 +5,6 @@ import Header from "../components/Header";
 
 
 function FavoritePage({ user, recipes, favoriteRecipes }){
-    // console.log('favoriteRecipes:', favoriteRecipes);
-    // favoriteRecipes.forEach((favorite, index) => {
-    //     console.log(favorite.recipe, favorite.recipe.image)
-        // console.log(`Favorite at index ${index}:`, favorite);
-        // console.log(`Recipe at index ${index}:`, favorite.recipe);
-    //   });
 
     return (
         <>
