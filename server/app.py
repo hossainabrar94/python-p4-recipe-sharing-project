@@ -60,6 +60,7 @@ class RecipeCollection(Resource):
     def get(self):
         recipes = [recipe.to_dict() for recipe in Recipe.query.all()]
         return recipes, 200
+
     
     def post(self):
         user_id = session.get('user_id')
@@ -165,6 +166,22 @@ class FavoriteCollection(Resource):
             db.session.rollback()
             return {'errors': [ str(e)]}, 500
 
+# Phase 4 Practice assessment question during review session
+# class GrabRecipeMinutes(Resource):
+
+#     def get(self, time):
+#         recipes = Recipe.query.filter(Recipe.minutes_to_complete >= time).all()
+#         if recipes:
+#             return [recipe.to_dict() for recipe in recipes], 200
+
+# Phase 4 Live Code Question: All users who have favorited a specific recipe by recipe title
+# class FindFavoriteRecipeForUser(Resource):
+
+#     def get(self, title):
+#         recipe = Recipe.query.filter(Recipe.title == title).first()
+#         users = [favorite.user for favorite in recipe.favorites]
+#         return [user.to_dict() for user in users], 200
+
 class FavoriteDetail(Resource):
 
     def get(self, id):
@@ -232,6 +249,8 @@ api.add_resource(Login, '/login', endpoint='login')
 api.add_resource(Logout, '/logout', endpoint='logout')
 api.add_resource(RecipeCollection, '/recipes', endpoint='recipes')
 api.add_resource(RecipeDetail, '/recipes/<int:id>', endpoint='recipe_detail')
+# api.add_resource(GrabRecipeMinutes, '/recipes/minutes/<int:time>', endpoint='recipe_time')
+# api.add_resource(FindFavoriteRecipeForUser, '/title/<string:title>', endpoint='users_recipe_favorites')
 api.add_resource(FavoriteCollection, '/favorites', endpoint='favorites')
 api.add_resource(FavoriteDetail, '/favorites/<int:id>', endpoint='favorites_detail')
 api.add_resource(CheckSession, '/check_session', endpoint='check_session')
